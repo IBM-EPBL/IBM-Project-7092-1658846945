@@ -1,0 +1,233 @@
+Team ID: PNT2022TMID42403
+
+Project: Intelligent Vehicle Damage Assessment & Cost Estimator For Insurance Companies
+
+Model Building
+
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+#setting parameter for image data augmentation to the training data.
+train_datagen=ImageDataGenerator(rescale=1./255,
+                                 shear_range=0.1,
+                                 zoom_range=0.1,
+                                 horizontal_flip=True)
+#image data augmentation to the testing data.
+test_datagen=ImageDataGenerator(rescale=1./255)
+trainpath = "/content/drive/MyDrive/ibm/body/training"
+testpath = "/content/drive/MyDrive/ibm/body/validation"
+training_set = train_datagen.flow_from_directory(trainpath,
+                                                 target_size = (224, 224),
+                                                 batch_size = 10,
+                                                 class_mode = 'categorical')
+
+test_set = test_datagen.flow_from_directory(testpath,
+                                            target_size = (224, 224),
+                                            batch_size = 10,
+                                            class_mode ='categorical' )
+Found 979 images belonging to 3 classes.
+Found 171 images belonging to 3 classes.
+from google.colab import drive
+drive.mount('/content/drive')
+Mounted at /content/drive
+trainpath = "/content/drive/MyDrive/ibm/level/training";
+testpath = "/content/drive/MyDrive/ibm/level/validation"
+training_set = train_datagen.flow_from_directory(trainpath,
+                                                 target_size = (224, 224),
+                                                 batch_size = 10,
+                                                 class_mode = 'categorical')
+
+test_set = test_datagen.flow_from_directory(trainpath,
+                                            target_size = (224, 224),
+                                            batch_size = 10,
+                                            class_mode ='categorical' )
+Found 979 images belonging to 3 classes.
+Found 979 images belonging to 3 classes.
+from tensorflow.keras.layers import Dense, Flatten, Input
+from tensorflow.keras.models import Model
+from tensorflow.keras.preprocessing import image
+from tensorflow.keras.preprocessing.image import ImageDataGenerator,load_img
+from tensorflow.keras.applications.vgg16 import VGG16, preprocess_input
+from glob import glob
+import numpy as np
+import matplotlib.pyplot as plt
+#adding preprocessing Layers to the front of vgg
+vgg=VGG16(weights='imagenet',include_top=False,input_tensor=Input(shape=(224,224,3)))
+vgg1=VGG16(weights='imagenet',include_top=False,input_tensor=Input(shape=(224,224,3)))
+Downloading data from https://storage.googleapis.com/tensorflow/keras-applications/vgg16/vgg16_weights_tf_dim_ordering_tf_kernels_notop.h5
+58889256/58889256 [==============================] - 0s 0us/step
+for layer in vgg.layers:
+    layer.trainable=False
+x=Flatten()(vgg.output)
+for layer in vgg1.layers:
+    layer.trainable=False
+y=Flatten()(vgg1.output)
+prediction=Dense(3,activation='softmax')(x)
+prediction1=Dense(3,activation='softmax')(y)
+model=Model(inputs=vgg.input,outputs=prediction)
+model1=Model(inputs=vgg1.input,outputs=prediction1)
+model.compile(loss='categorical_crossentropy', optimizer='adam',metrics=['acc'])
+model1.compile(loss='categorical_crossentropy', optimizer='adam',metrics=['acc'])
+import sys
+r=model.fit_generator(training_set,
+                      validation_data=test_set,
+                      epochs=25,
+                      steps_per_epoch=979//10,
+                      validation_steps=171//10)
+/usr/local/lib/python3.7/dist-packages/ipykernel_launcher.py:6: UserWarning: `Model.fit_generator` is deprecated and will be removed in a future version. Please use `Model.fit`, which supports generators.
+  
+Epoch 1/25
+97/97 [==============================] - 656s 7s/step - loss: 1.2440 - acc: 0.5501 - val_loss: 46.0188 - val_acc: 0.5294
+Epoch 2/25
+97/97 [==============================] - 597s 6s/step - loss: 0.8152 - acc: 0.6883 - val_loss: 17.2177 - val_acc: 0.6941
+Epoch 3/25
+97/97 [==============================] - 594s 6s/step - loss: 0.5489 - acc: 0.7936 - val_loss: 24.1318 - val_acc: 0.7353
+Epoch 4/25
+97/97 [==============================] - 592s 6s/step - loss: 0.4369 - acc: 0.8256 - val_loss: 14.0085 - val_acc: 0.7941
+Epoch 5/25
+97/97 [==============================] - 591s 6s/step - loss: 0.3428 - acc: 0.8669 - val_loss: 13.4631 - val_acc: 0.7941
+Epoch 6/25
+97/97 [==============================] - 590s 6s/step - loss: 0.2431 - acc: 0.9154 - val_loss: 20.1043 - val_acc: 0.7412
+Epoch 7/25
+97/97 [==============================] - 588s 6s/step - loss: 0.2332 - acc: 0.9185 - val_loss: 16.2600 - val_acc: 0.7824
+Epoch 8/25
+97/97 [==============================] - 593s 6s/step - loss: 0.1424 - acc: 0.9494 - val_loss: 20.6683 - val_acc: 0.7588
+Epoch 9/25
+97/97 [==============================] - 590s 6s/step - loss: 0.1214 - acc: 0.9618 - val_loss: 17.3137 - val_acc: 0.8000
+Epoch 10/25
+97/97 [==============================] - 591s 6s/step - loss: 0.0872 - acc: 0.9794 - val_loss: 25.4647 - val_acc: 0.7706
+Epoch 11/25
+97/97 [==============================] - 590s 6s/step - loss: 0.0847 - acc: 0.9783 - val_loss: 21.4580 - val_acc: 0.7588
+Epoch 12/25
+97/97 [==============================] - 590s 6s/step - loss: 0.0751 - acc: 0.9814 - val_loss: 19.4609 - val_acc: 0.8000
+Epoch 13/25
+97/97 [==============================] - 592s 6s/step - loss: 0.0699 - acc: 0.9835 - val_loss: 20.0446 - val_acc: 0.7882
+Epoch 14/25
+97/97 [==============================] - 591s 6s/step - loss: 0.0459 - acc: 0.9928 - val_loss: 20.0266 - val_acc: 0.8235
+Epoch 15/25
+97/97 [==============================] - 595s 6s/step - loss: 0.0562 - acc: 0.9917 - val_loss: 18.1557 - val_acc: 0.8059
+Epoch 16/25
+97/97 [==============================] - 590s 6s/step - loss: 0.0470 - acc: 0.9907 - val_loss: 15.6382 - val_acc: 0.8353
+Epoch 17/25
+97/97 [==============================] - 590s 6s/step - loss: 0.0430 - acc: 0.9886 - val_loss: 27.0096 - val_acc: 0.8059
+Epoch 18/25
+97/97 [==============================] - 590s 6s/step - loss: 0.0426 - acc: 0.9917 - val_loss: 24.7230 - val_acc: 0.8235
+Epoch 19/25
+97/97 [==============================] - 592s 6s/step - loss: 0.0532 - acc: 0.9876 - val_loss: 29.8726 - val_acc: 0.7765
+Epoch 20/25
+97/97 [==============================] - 592s 6s/step - loss: 0.0951 - acc: 0.9649 - val_loss: 23.7916 - val_acc: 0.7706
+Epoch 21/25
+97/97 [==============================] - 594s 6s/step - loss: 0.1347 - acc: 0.9567 - val_loss: 32.5136 - val_acc: 0.7824
+Epoch 22/25
+97/97 [==============================] - 592s 6s/step - loss: 0.0751 - acc: 0.9732 - val_loss: 26.0924 - val_acc: 0.7647
+Epoch 23/25
+97/97 [==============================] - 591s 6s/step - loss: 0.0348 - acc: 0.9897 - val_loss: 27.7145 - val_acc: 0.8118
+Epoch 24/25
+97/97 [==============================] - 591s 6s/step - loss: 0.0418 - acc: 0.9907 - val_loss: 30.8595 - val_acc: 0.7706
+Epoch 25/25
+97/97 [==============================] - 597s 6s/step - loss: 0.0274 - acc: 0.9917 - val_loss: 33.4992 - val_acc: 0.8000
+model.save('body.h5')
+from tensorflow.keras.models import  load_model
+import cv2
+from skimage.transform import resize
+body_model=load_model('/content/drive/MyDrive/models/body.h5')
+from tensorflow.keras.models import load_model
+import cv2
+from skimage.transform import resize
+body_model=load_model('/content/drive/MyDrive/models/body.h5')
+def detect(frame):
+    img=cv2.resize(frame,(224,224))
+    img=cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
+    if(np.max(img)>1):
+        img=img/255.0
+    img=np.array([img])
+    prediction =body_model.predict(img)
+    #print(prediction)
+    label=["front","rear","side"]
+    preds=label[np.argmax(prediction)]
+    return preds
+import numpy as np
+
+data="/content/drive/MyDrive/ibm/body/training/00-front/0003.JPEG"
+image=cv2.imread(data)
+print(detect(image))
+1/1 [==============================] - 1s 1s/step
+front
+import sys
+r1= model1.fit_generator(training_set,
+                        validation_data=test_set,
+                        epochs=25,
+                        steps_per_epoch=979//10,
+                        validation_steps=171//10)
+model1.save('/content/drive/MyDrive/models')
+/usr/local/lib/python3.7/dist-packages/ipykernel_launcher.py:6: UserWarning: `Model.fit_generator` is deprecated and will be removed in a future version. Please use `Model.fit`, which supports generators.
+  
+Epoch 1/25
+97/97 [==============================] - 599s 6s/step - loss: 1.2208 - acc: 0.5449 - val_loss: 0.6463 - val_acc: 0.7588
+Epoch 2/25
+97/97 [==============================] - 591s 6s/step - loss: 0.6889 - acc: 0.7286 - val_loss: 0.6020 - val_acc: 0.7647
+Epoch 3/25
+97/97 [==============================] - 592s 6s/step - loss: 0.5225 - acc: 0.8060 - val_loss: 0.2679 - val_acc: 0.9176
+Epoch 4/25
+97/97 [==============================] - 595s 6s/step - loss: 0.4856 - acc: 0.8039 - val_loss: 0.3311 - val_acc: 0.9000
+Epoch 5/25
+97/97 [==============================] - 595s 6s/step - loss: 0.3420 - acc: 0.8658 - val_loss: 0.2542 - val_acc: 0.9118
+Epoch 6/25
+97/97 [==============================] - 592s 6s/step - loss: 0.3022 - acc: 0.8803 - val_loss: 0.2605 - val_acc: 0.9059
+Epoch 7/25
+97/97 [==============================] - 595s 6s/step - loss: 0.1937 - acc: 0.9298 - val_loss: 0.1018 - val_acc: 0.9529
+Epoch 8/25
+97/97 [==============================] - 593s 6s/step - loss: 0.1660 - acc: 0.9340 - val_loss: 0.1045 - val_acc: 0.9588
+Epoch 9/25
+97/97 [==============================] - 590s 6s/step - loss: 0.1145 - acc: 0.9670 - val_loss: 0.1102 - val_acc: 0.9765
+Epoch 10/25
+97/97 [==============================] - 593s 6s/step - loss: 0.0894 - acc: 0.9763 - val_loss: 0.0712 - val_acc: 0.9765
+Epoch 11/25
+97/97 [==============================] - 595s 6s/step - loss: 0.0930 - acc: 0.9773 - val_loss: 0.0316 - val_acc: 1.0000
+Epoch 12/25
+97/97 [==============================] - 596s 6s/step - loss: 0.0596 - acc: 0.9886 - val_loss: 0.0286 - val_acc: 0.9941
+Epoch 13/25
+97/97 [==============================] - 594s 6s/step - loss: 0.0873 - acc: 0.9732 - val_loss: 0.0240 - val_acc: 1.0000
+Epoch 14/25
+97/97 [==============================] - 592s 6s/step - loss: 0.1523 - acc: 0.9463 - val_loss: 0.2901 - val_acc: 0.8882
+Epoch 15/25
+97/97 [==============================] - 598s 6s/step - loss: 0.1124 - acc: 0.9556 - val_loss: 0.1287 - val_acc: 0.9529
+Epoch 16/25
+97/97 [==============================] - 596s 6s/step - loss: 0.0689 - acc: 0.9763 - val_loss: 0.0279 - val_acc: 1.0000
+Epoch 17/25
+97/97 [==============================] - 592s 6s/step - loss: 0.0305 - acc: 0.9969 - val_loss: 0.0130 - val_acc: 1.0000
+Epoch 18/25
+97/97 [==============================] - 592s 6s/step - loss: 0.0252 - acc: 0.9979 - val_loss: 0.0153 - val_acc: 1.0000
+Epoch 19/25
+97/97 [==============================] - 595s 6s/step - loss: 0.0293 - acc: 0.9969 - val_loss: 0.0095 - val_acc: 1.0000
+Epoch 20/25
+97/97 [==============================] - 593s 6s/step - loss: 0.0467 - acc: 0.9907 - val_loss: 0.0623 - val_acc: 0.9765
+Epoch 21/25
+97/97 [==============================] - 592s 6s/step - loss: 0.0303 - acc: 0.9917 - val_loss: 0.0120 - val_acc: 1.0000
+Epoch 22/25
+97/97 [==============================] - 597s 6s/step - loss: 0.0719 - acc: 0.9783 - val_loss: 0.0131 - val_acc: 0.9941
+Epoch 23/25
+97/97 [==============================] - 596s 6s/step - loss: 0.0273 - acc: 0.9948 - val_loss: 0.0142 - val_acc: 1.0000
+Epoch 24/25
+97/97 [==============================] - 595s 6s/step - loss: 0.0373 - acc: 0.9907 - val_loss: 0.0095 - val_acc: 1.0000
+Epoch 25/25
+97/97 [==============================] - 594s 6s/step - loss: 0.0243 - acc: 0.9959 - val_loss: 0.0082 - val_acc: 1.0000
+WARNING:absl:Found untraced functions such as _jit_compiled_convolution_op, _jit_compiled_convolution_op, _jit_compiled_convolution_op, _jit_compiled_convolution_op, _jit_compiled_convolution_op while saving (showing 5 of 13). These functions will not be directly callable after loading.
+level_model = load_model('/content/drive/MyDrive/models/level.h5')
+
+
+def detect1(frame):
+    img = cv2.resize(frame, (224, 224))
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    if(np.max(img) > 1):
+        img = img/255.0
+    img = np.array([img])
+    prediction = level_model.predict(img)
+    print(prediction)
+    label = ["minor", "moderate", "severe"]
+    preds = label[np.argmax(prediction)]
+    return preds
+data = "/content/drive/MyDrive/ibm/level/training/01-minor/0005.JPEG"
+image = cv2.imread(data)
+print(detect1(image))
+1/1 [==============================] - 1s 696ms/step
+[[9.9673647e-01 3.2539540e-03 9.4984289e-06]]
+minor
